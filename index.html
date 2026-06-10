@@ -231,11 +231,11 @@ function freshState(){
   return {
     jobs:[
       {id:0, client:"Marco Bianchi", phone:"+39 333 1234567", title:"Rifacimento bagno completo",
-       items:[{d:"Rifacimento bagno completo",q:1,p:4200}], depositPct:30, status:"draft", reminders:true},
-      {id:11, client:"Famiglia Rossi", title:"Tinteggiatura trilocale", items:[{d:"Tinteggiatura",q:1,p:1450}], depositPct:30, status:"balance"},
-      {id:12, client:"Studio Verdi", title:"Controsoffitto in cartongesso", items:[{d:"Cartongesso",q:1,p:1300}], depositPct:30, status:"deposit"},
-      {id:13, client:"Sig.ra Conti", title:"Posa infissi cucina", items:[{d:"Infissi",q:1,p:2600}], depositPct:40, status:"seen"},
-      {id:14, client:"Cond. Aurora", title:"Ripristino intonaco androne", items:[{d:"Intonaco",q:1,p:980}], depositPct:30, status:"paid"},
+       items:[{d:"Rifacimento bagno completo",q:1,p:4200}], depositPct:30, depositMode:"digital", status:"draft", reminders:true},
+      {id:11, client:"Famiglia Rossi", title:"Tinteggiatura trilocale", items:[{d:"Tinteggiatura",q:1,p:1450}], depositPct:30, depositMode:"cash", status:"balance"},
+      {id:12, client:"Studio Verdi", title:"Controsoffitto in cartongesso", items:[{d:"Cartongesso",q:1,p:1300}], depositPct:30, depositMode:"digital", status:"deposit"},
+      {id:13, client:"Sig.ra Conti", title:"Posa infissi cucina", items:[{d:"Infissi",q:1,p:2600}], depositPct:40, depositMode:"cash", status:"seen"},
+      {id:14, client:"Cond. Aurora", title:"Ripristino intonaco androne", items:[{d:"Intonaco",q:1,p:980}], depositPct:30, depositMode:"digital", status:"paid"},
     ]
   };
 }
@@ -256,10 +256,12 @@ function setRole(r){
   render();
 }
 function clientEntry(){
-  const st=J().status;
+  const j=J();
+  const st=j.status;
   if(st==="paid") return "c-done";
   if(st==="balance") return "c-balance";
   if(st==="progress"||st==="deposit") return "c-deposit-done";
+  if(st==="accepted" && j.depositMode==="cash") return "c-cash-deposit";
   return "c-quote";
 }
 function resetDemo(){ state=freshState(); role="pro"; setRole("pro"); toast("Demo riavviata"); }
@@ -343,11 +345,22 @@ const SCREENS = {
         <option value="50" ${j.depositPct==50?'selected':''}>50%</option>
       </select></label>
 
+    <label class="fld"><span>Come incassi l'acconto?</span>
+      <select class="inp" onchange="J().depositMode=this.value;render()">
+        <option value="digital" ${j.depositMode=='digital'?'selected':''}>💳 Digitale (carta / Satispay / bonifico)</option>
+        <option value="cash" ${j.depositMode=='cash'?'selected':''}>💵 Contanti / manuale</option>
+      </select></label>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px;padding:0 2px">
+      ${j.depositMode==='cash'
+        ? '👉 Il cliente accetta online, tu confermi l&#39;acconto quando lo ricevi di persona.'
+        : '👉 Il cliente paga direttamente dal link. Tu incassi senza rincorrere.'}
+    </div>
+
     <div class="total-card">
       <div class="r big"><span>Totale</span><span>${eur(total(j))}</span></div>
       <div class="r"><span>Acconto (${j.depositPct}%)</span><span>${eur(deposit(j))}</span></div>
       <div class="r"><span>Saldo a fine lavori</span><span>${eur(balance(j))}</span></div>
-      <div class="acc-row"><span>💳 Acconto incassato prima di iniziare</span><span>${eur(deposit(j))}</span></div>
+      <div class="acc-row"><span>${j.depositMode==='cash'?'💵':'💳'} Acconto incassato prima di iniziare</span><span>${eur(deposit(j))}</span></div>
     </div>
   </div>
   <div class="stack">
@@ -366,6 +379,7 @@ const SCREENS = {
         <div class="qline"><span class="m">Cliente</span><span>${j.client}</span></div>
         <div class="qline"><span class="m">Totale</span><span><b>${eur(total(j))}</b></span></div>
         <div class="qline"><span class="m">Acconto richiesto</span><span style="color:var(--green);font-weight:800">${eur(deposit(j))}</span></div>
+        <div class="qline"><span class="m">Modalità incasso</span><span style="font-weight:700">${j.depositMode==='cash'?'💵 Contanti':'💳 Digitale'}</span></div>
       </div>
     </div>
 
@@ -380,7 +394,9 @@ const SCREENS = {
     <div class="section-title">Anteprima messaggio WhatsApp</div>
     <div class="wa-bubble">
       Ciao ${j.client.split(' ')[0]}! Ecco il preventivo per <b>${j.title}</b>: ${eur(total(j))}.
-      Puoi vederlo, accettarlo e bloccare la data versando l'acconto qui 👇<br>
+      ${j.depositMode==='cash'
+        ? 'Puoi vederlo e accettarlo qui 👇 Poi ci accordiamo per l&#39;acconto di persona.'
+        : 'Puoi vederlo, accettarlo e bloccare la data versando l&#39;acconto qui 👇'}<br>
       <span class="lnk">saldato.app/p/8F2K-${j.id}</span>
     </div>
   </div>
@@ -408,6 +424,9 @@ const SCREENS = {
     action=`<button class="btn btn-primary" onclick="remindBalance()">📨 Sollecita il saldo ora</button>`;
   } else if(j.status==="progress"||j.status==="deposit"){
     action=`<button class="btn btn-green" onclick="requestBalance()">✅ Lavoro finito · richiedi saldo</button>`;
+  } else if(j.status==="accepted" && j.depositMode==="cash"){
+    action=`<button class="btn btn-green" onclick="confirmCashDeposit()">💵 Conferma acconto ricevuto (contanti)</button>
+             <button class="btn btn-line" style="margin-top:10px" onclick="manualRemind()">📨 Sollecita ora</button>`;
   } else if(["sent","seen","accepted"].includes(j.status)){
     action=`<button class="btn btn-line" onclick="manualRemind()">📨 Sollecita ora</button>`;
   } else {
@@ -522,6 +541,23 @@ const SCREENS = {
   </div>`;
 },
 
+"c-cash-deposit":()=>{
+  const j=J();
+  return `
+  <div class="success">
+    <div style="font-size:56px;margin-bottom:12px">🤝</div>
+    <h2>Preventivo accettato!</h2>
+    <p style="margin-top:8px">Versa l'acconto di <b>${eur(deposit(j))}</b> direttamente all'artigiano (contanti, assegno, come preferite).</p>
+    <div style="background:var(--amber-bg);border-radius:14px;padding:14px;margin-top:18px;text-align:left;width:100%">
+      <div style="font-weight:700;font-size:13px;color:var(--amber)">💵 Acconto da versare di persona</div>
+      <div style="font-size:13px;color:var(--ink);margin-top:6px">L'artigiano confermerà la ricezione e potranno partire i lavori. Non serve nessun pagamento online.</div>
+    </div>
+    <div class="stack" style="width:100%;margin-top:22px">
+      <button class="btn btn-line" onclick="toast('Messaggio inviato all\\'artigiano')">📞 Contatta l'artigiano</button>
+    </div>
+  </div>`;
+},
+
 };
 
 /* schermata di pagamento riutilizzabile (mock stile Stripe) */
@@ -583,8 +619,17 @@ function sendQuote(){
 }
 function manualRemind(){ J().status="seen"; toast("Sollecito inviato. Il cliente ha aperto il link 👀"); render(); }
 
-function clientAccept(){ J().status="accepted"; go("c-pay-deposit"); }
+function clientAccept(){ 
+  const j=J();
+  j.status="accepted"; 
+  if(j.depositMode==="cash"){
+    go("c-cash-deposit");
+  } else {
+    go("c-pay-deposit"); 
+  }
+}
 function clientPayDeposit(){ J().status="deposit"; toast("Acconto incassato!"); go("c-deposit-done"); }
+function confirmCashDeposit(){ J().status="deposit"; toast("Acconto contanti confermato ✓"); render(); }
 function requestBalance(){ J().status="balance"; toast("Richiesta di saldo inviata al cliente"); render(); }
 function remindBalance(){ toast("Sollecito saldo inviato ✓"); }
 function clientPayBalance(){ J().status="paid"; toast("Saldo pagato 🎉"); go("c-done"); }
