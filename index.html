@@ -171,7 +171,7 @@
 <body>
   <div class="head">
     <h1>Saldato</h1>
-    <p>Fatti pagare prima. Smetti di rincorrere i clienti la sera.</p>
+    <p>Smetti di rincorrere i clienti. Preventivo, accettazione e incasso — tutto da un link.</p>
     <div class="badge">PROTOTIPO CLICCABILE · nicchia: edilizia leggera</div>
   </div>
 
@@ -347,12 +347,12 @@ const SCREENS = {
 
     <label class="fld"><span>Come incassi l'acconto?</span>
       <select class="inp" onchange="J().depositMode=this.value;render()">
-        <option value="digital" ${j.depositMode=='digital'?'selected':''}>💳 Digitale (carta / Satispay / bonifico)</option>
-        <option value="cash" ${j.depositMode=='cash'?'selected':''}>💵 Contanti / manuale</option>
+        <option value="digital" ${j.depositMode=='digital'?'selected':''}>💳 Pagamento dal link (carta / Satispay / bonifico)</option>
+        <option value="cash" ${j.depositMode=='cash'?'selected':''}>✋ Gestisco io l&#39;incasso</option>
       </select></label>
     <div style="font-size:12px;color:var(--muted);margin-top:6px;padding:0 2px">
       ${j.depositMode==='cash'
-        ? '👉 Il cliente accetta online, tu confermi l&#39;acconto quando lo ricevi di persona.'
+        ? '👉 Il cliente accetta online, tu confermi quando hai incassato. Nessun vincolo su come paga.'
         : '👉 Il cliente paga direttamente dal link. Tu incassi senza rincorrere.'}
     </div>
 
@@ -379,7 +379,7 @@ const SCREENS = {
         <div class="qline"><span class="m">Cliente</span><span>${j.client}</span></div>
         <div class="qline"><span class="m">Totale</span><span><b>${eur(total(j))}</b></span></div>
         <div class="qline"><span class="m">Acconto richiesto</span><span style="color:var(--green);font-weight:800">${eur(deposit(j))}</span></div>
-        <div class="qline"><span class="m">Modalità incasso</span><span style="font-weight:700">${j.depositMode==='cash'?'💵 Contanti':'💳 Digitale'}</span></div>
+        <div class="qline"><span class="m">Modalità incasso</span><span style="font-weight:700">${j.depositMode==='cash'?'✋ Gestisco io':'💳 Dal link'}</span></div>
       </div>
     </div>
 
@@ -425,7 +425,7 @@ const SCREENS = {
   } else if(j.status==="progress"||j.status==="deposit"){
     action=`<button class="btn btn-green" onclick="requestBalance()">✅ Lavoro finito · richiedi saldo</button>`;
   } else if(j.status==="accepted" && j.depositMode==="cash"){
-    action=`<button class="btn btn-green" onclick="confirmCashDeposit()">💵 Conferma acconto ricevuto (contanti)</button>
+    action=`<button class="btn btn-green" onclick="confirmCashDeposit()">✅ Conferma acconto incassato</button>
              <button class="btn btn-line" style="margin-top:10px" onclick="manualRemind()">📨 Sollecita ora</button>`;
   } else if(["sent","seen","accepted"].includes(j.status)){
     action=`<button class="btn btn-line" onclick="manualRemind()">📨 Sollecita ora</button>`;
@@ -547,10 +547,10 @@ const SCREENS = {
   <div class="success">
     <div style="font-size:56px;margin-bottom:12px">🤝</div>
     <h2>Preventivo accettato!</h2>
-    <p style="margin-top:8px">Versa l'acconto di <b>${eur(deposit(j))}</b> direttamente all'artigiano (contanti, assegno, come preferite).</p>
+    <p style="margin-top:8px">Accordati con l'artigiano per versare l'acconto di <b>${eur(deposit(j))}</b> prima dell'inizio dei lavori.</p>
     <div style="background:var(--amber-bg);border-radius:14px;padding:14px;margin-top:18px;text-align:left;width:100%">
-      <div style="font-weight:700;font-size:13px;color:var(--amber)">💵 Acconto da versare di persona</div>
-      <div style="font-size:13px;color:var(--ink);margin-top:6px">L'artigiano confermerà la ricezione e potranno partire i lavori. Non serve nessun pagamento online.</div>
+      <div style="font-weight:700;font-size:13px;color:var(--amber)">⏳ In attesa della conferma</div>
+      <div style="font-size:13px;color:var(--ink);margin-top:6px">L'artigiano confermerà la ricezione dell'acconto e i lavori potranno partire.</div>
     </div>
     <div class="stack" style="width:100%;margin-top:22px">
       <button class="btn btn-line" onclick="toast('Messaggio inviato all\\'artigiano')">📞 Contatta l'artigiano</button>
