@@ -71,12 +71,13 @@
   .back{border:0;background:#fff;border:1px solid var(--line);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;color:var(--ink)}
 
   .pad{padding:4px 18px 26px}
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 14px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:6px 0 14px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
   .kpi .l{font-size:11px;color:var(--muted);font-weight:600}
   .kpi .v{font-size:21px;font-weight:800;margin-top:3px;letter-spacing:-.5px}
   .kpi.green .v{color:var(--green)}
   .kpi.amber .v{color:var(--amber)}
+  .kpi.red .v{color:var(--red)}
 
   .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 2px 8px}
 
@@ -95,6 +96,7 @@
   .p-bal{background:var(--red-bg);color:var(--red)}
   .p-paid{background:var(--green-bg);color:var(--green)}
   .p-draft{background:#eef0f3;color:#6b7280}
+  .p-ghost{background:var(--red-bg);color:var(--red)}
 
   .fab{position:absolute;right:18px;bottom:20px;background:var(--brand);color:#fff;border:0;border-radius:16px;padding:15px 18px;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(47,91,255,.45);cursor:pointer;display:flex;gap:8px;align-items:center}
 
@@ -172,6 +174,7 @@
   <div class="head">
     <h1>Saldato</h1>
     <p>Il preventivo è gratis. Il mio tempo no.</p>
+    <p style="margin-top:8px;font-size:14px;color:#e2e8f4;font-weight:600">Mandi il preventivo. Vedi chi lo apre, chi accetta, chi sparisce.<br>Chi non conferma non ti ruba più neanche un minuto.</p>
     <div class="badge">PROTOTIPO CLICCABILE · nicchia: edilizia leggera</div>
   </div>
 
@@ -286,10 +289,12 @@ const SCREENS = {
   const incassare = state.jobs.filter(x=>x.status==="balance").reduce((s,x)=>s+balance(x),0)
                   + (j.status==="balance"?0:0);
   const accontiMese = state.jobs.filter(x=>["deposit","progress","balance","paid"].includes(x.status)).reduce((s,x)=>s+deposit(x),0);
+  const fantasmi = state.jobs.filter(x=>["sent","seen"].includes(x.status)).length;
   const rows = state.jobs.map(x=>{
     const st=STATUS[x.status];
     const amt = x.status==="balance" ? balance(x) : total(x);
     const amtlbl = x.status==="balance" ? "da incassare" : "totale";
+    const ghost = ["sent","seen"].includes(x.status) ? `<span class="pill p-ghost">👻 Non risponde</span>` : "";
     return `<div class="job" onclick="openJob(${x.id})">
       <div class="row">
         <div>
@@ -298,15 +303,16 @@ const SCREENS = {
         </div>
         <div class="amt">${eur(amt)}<div class="c" style="font-weight:500">${amtlbl}</div></div>
       </div>
-      <div style="margin-top:10px"><span class="pill ${st.pill}">${st.label}</span></div>
+      <div style="margin-top:10px"><span class="pill ${st.pill}">${st.label}</span> ${ghost}</div>
     </div>`;
   }).join("");
   return `
   <div class="appbar"><div class="logo">Sal<b>dato</b></div><div class="role">Artigiano · Edil Service</div></div>
   <div class="pad">
     <div class="kpis">
+      <div class="kpi red"><div class="l">👻 Fantasmi</div><div class="v">${fantasmi}</div></div>
       <div class="kpi amber"><div class="l">Da incassare</div><div class="v">${eur(incassare)}</div></div>
-      <div class="kpi green"><div class="l">Acconti incassati (mese)</div><div class="v">${eur(accontiMese)}</div></div>
+      <div class="kpi green"><div class="l">Acconti incassati</div><div class="v">${eur(accontiMese)}</div></div>
     </div>
     <div class="section-title">I tuoi lavori</div>
     ${rows}
