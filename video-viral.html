@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Saldato — Video Virale 9:16</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;overflow:hidden;
+  background:#000;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Container 9:16 — perfetto per screen recording */
+.canvas{
+  width:1080px;height:1920px;
+  transform-origin:center center;
+  background:#0a0e1a;
+  position:relative;
+  overflow:hidden;
+  font-family:'Inter',sans-serif;
+}
+
+/* Auto-scale per stare nello schermo */
+@media(max-height:1920px){
+  .canvas{transform:scale(calc(100vh / 1920))}
+}
+@media(max-width:1080px){
+  .canvas{transform:scale(calc(100vw / 1080))}
+}
+
+/* Sfondo animato particelle */
+.particles{
+  position:absolute;inset:0;
+  overflow:hidden;
+  z-index:0;
+}
+.particle{
+  position:absolute;
+  width:4px;height:4px;
+  background:rgba(47,91,255,.3);
+  border-radius:50%;
+  animation:drift linear infinite;
+}
+@keyframes drift{
+  0%{transform:translateY(1920px) scale(0);opacity:0}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{transform:translateY(-100px) scale(1);opacity:0}
+}
+
+/* Scene container */
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 60px;
+  opacity:0;
+  z-index:10;
+  text-align:center;
+  pointer-events:none;
+}
+.scene.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* ===== SCENE STYLES ===== */
+
+/* Scene 1: HOOK — "Mandi preventivi gratis?" */
+.scene-1 .hook-text{
+  font-size:88px;
+  font-weight:900;
+  color:#fff;
+  line-height:1.1;
+  letter-spacing:-3px;
+  opacity:0;
+}
+.scene-1 .hook-highlight{
+  color:#ff3b4a;
+  display:inline-block;
+}
+.scene-1 .hook-emoji{
+  font-size:140px;
+  opacity:0;
+  display:block;
+  margin-bottom:40px;
+}
+
+/* Scene 2: PROBLEMA — "7 su 10 spariscono" */
+.scene-2 .stat-number{
+  font-size:280px;
+  font-weight:900;
+  color:#ff3b4a;
+  line-height:0.85;
+  opacity:0;
+  letter-spacing:-10px;
+}
+.scene-2 .stat-label{
+  font-size:52px;
+  font-weight:700;
+  color:#b8c4e0;
+  margin-top:20px;
+  opacity:0;
+  line-height:1.3;
+}
+.scene-2 .stat-sub{
+  font-size:36px;
+  color:#6b7fa0;
+  margin-top:16px;
+  opacity:0;
+}
+
+/* Scene 3: AGITAZIONE — counter soldi persi */
+.scene-3 .money-lost{
+  font-size:120px;
+  font-weight:900;
+  color:#ff3b4a;
+  opacity:0;
+  font-variant-numeric:tabular-nums;
+}
+.scene-3 .money-label{
+  font-size:44px;
+  font-weight:700;
+  color:#fff;
+  margin-top:16px;
+  opacity:0;
+}
+.scene-3 .money-sub{
+  font-size:32px;
+  color:#6b7fa0;
+  margin-top:12px;
+  opacity:0;
+}
+
+/* Scene 4: SOLUZIONE — Saldato */
+.scene-4 .solution-logo{
+  font-size:110px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-3px;
+  opacity:0;
+}
+.scene-4 .solution-logo b{color:#2f5bff}
+.scene-4 .solution-tagline{
+  font-size:48px;
+  font-weight:700;
+  color:#b8c4e0;
+  margin-top:24px;
+  opacity:0;
+  line-height:1.3;
+}
+.scene-4 .features{
+  margin-top:60px;
+  display:flex;flex-direction:column;gap:24px;
+  width:100%;
+  max-width:800px;
+}
+.scene-4 .feature{
+  background:rgba(47,91,255,.1);
+  border:2px solid rgba(47,91,255,.3);
+  border-radius:24px;
+  padding:28px 36px;
+  display:flex;align-items:center;gap:20px;
+  opacity:0;
+  transform:translateX(-60px);
+}
+.scene-4 .feature .icon{font-size:44px}
+.scene-4 .feature .text{
+  font-size:32px;font-weight:700;color:#fff;text-align:left;
+}
+
+/* Scene 5: PREZZO — "0€ se non funziona" */
+.scene-5 .price-box{
+  background:linear-gradient(135deg,#13a36b,#0d8a59);
+  padding:48px 64px;
+  border-radius:32px;
+  box-shadow:0 20px 80px rgba(19,163,107,.5);
+  opacity:0;
+  transform:scale(0.5);
+}
+.scene-5 .price-box .amount{
+  font-size:160px;font-weight:900;color:#fff;line-height:1;
+}
+.scene-5 .price-box .condition{
+  font-size:36px;color:rgba(255,255,255,.85);margin-top:8px;
+}
+.scene-5 .price-detail{
+  font-size:40px;font-weight:700;color:#fff;
+  margin-top:40px;opacity:0;
+}
+.scene-5 .price-sub{
+  font-size:30px;color:#6b7fa0;margin-top:12px;opacity:0;
+}
+
+/* Scene 6: CTA — "Provalo gratis" */
+.scene-6 .cta-logo{
+  font-size:100px;font-weight:900;color:#fff;
+  letter-spacing:-3px;opacity:0;
+}
+.scene-6 .cta-logo b{color:#2f5bff}
+.scene-6 .cta-main{
+  font-size:56px;font-weight:900;color:#fff;
+  margin-top:40px;opacity:0;line-height:1.2;
+}
+.scene-6 .cta-button{
+  margin-top:48px;
+  background:#2f5bff;
+  color:#fff;
+  font-size:44px;
+  font-weight:900;
+  padding:32px 72px;
+  border-radius:24px;
+  box-shadow:0 16px 60px rgba(47,91,255,.6);
+  opacity:0;
+  transform:scale(0.8);
+  display:inline-block;
+}
+.scene-6 .cta-sub{
+  margin-top:32px;font-size:28px;color:#6b7fa0;opacity:0;
+}
+.scene-6 .cta-arrow{
+  font-size:80px;color:#2f5bff;
+  margin-top:24px;opacity:0;
+  animation:bounceArrow 0.6s ease-in-out infinite alternate;
+}
+@keyframes bounceArrow{
+  from{transform:translateY(0)}
+  to{transform:translateY(16px)}
+}
+
+/* Progress bar stile stories */
+.progress{
+  position:absolute;top:40px;left:40px;right:40px;
+  display:flex;gap:8px;z-index:100;
+}
+.progress .bar{
+  flex:1;height:6px;border-radius:3px;
+  background:rgba(255,255,255,.15);
+  overflow:hidden;
+}
+.progress .bar .fill{
+  height:100%;width:0;background:#fff;border-radius:3px;
+  transition:width linear;
+}
+.progress .bar.done .fill{width:100%}
+.progress .bar.active .fill{width:0}
+
+/* Vignette overlay */
+.vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.6) 100%);
+  z-index:5;
+  pointer-events:none;
+}
+
+/* Countdown overlay */
+.countdown{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;
+  background:#0a0e1a;
+  opacity:1;
+  transition:opacity .3s;
+}
+.countdown.hidden{opacity:0;pointer-events:none}
+.countdown .num{
+  font-size:200px;font-weight:900;color:#fff;
+  animation:countPulse .8s ease-in-out infinite;
+}
+@keyframes countPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+}
+
+/* Shake animation */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+</style>
+</head>
+<body>
+
+<div class="canvas" id="canvas">
+  <!-- Particelle sfondo -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Vignette -->
+  <div class="vignette"></div>
+  
+  <!-- Progress bar -->
+  <div class="progress" id="progress"></div>
+
+  <!-- Countdown iniziale -->
+  <div class="countdown" id="countdown">
+    <div class="num" id="countNum">3</div>
+  </div>
+
+  <!-- SCENE -->
+  
+  <!-- Scene 1: HOOK (3s) -->
+  <div class="scene scene-1" id="scene-0">
+    <span class="hook-emoji">👻</span>
+    <div class="hook-text">Mandi preventivi<br><span class="hook-highlight">gratis?</span></div>
+  </div>
+
+  <!-- Scene 2: PROBLEMA (4s) -->
+  <div class="scene scene-2" id="scene-1">
+    <div class="stat-number">7/10</div>
+    <div class="stat-label">non ti rispondono più</div>
+    <div class="stat-sub">Ogni. Singolo. Mese.</div>
+  </div>
+
+  <!-- Scene 3: AGITAZIONE (4s) -->
+  <div class="scene scene-3" id="scene-2">
+    <div class="money-lost" id="moneyCounter">-€0</div>
+    <div class="money-label">persi in preventivi fantasma</div>
+    <div class="money-sub">solo quest'anno</div>
+  </div>
+
+  <!-- Scene 4: SOLUZIONE (5s) -->
+  <div class="scene scene-4" id="scene-3">
+    <div class="solution-logo">Sal<b>dato</b></div>
+    <div class="solution-tagline">Sai chi sparisce.<br>Prima che sparisca.</div>
+    <div class="features">
+      <div class="feature"><span class="icon">📊</span><span class="text">Tracking automatico preventivi</span></div>
+      <div class="feature"><span class="icon">🔔</span><span class="text">Alert prima che spariscano</span></div>
+      <div class="feature"><span class="icon">💬</span><span class="text">Follow-up che convertono</span></div>
+    </div>
+  </div>
+
+  <!-- Scene 5: PREZZO (4s) -->
+  <div class="scene scene-5" id="scene-4">
+    <div class="price-box">
+      <div class="amount">0€</div>
+      <div class="condition">se non funziona</div>
+    </div>
+    <div class="price-detail">Max 49€/mese. Mai di più.</div>
+    <div class="price-sub">Paghi solo quando il fantasma torna.</div>
+  </div>
+
+  <!-- Scene 6: CTA (5s) -->
+  <div class="scene scene-6" id="scene-5">
+    <div class="cta-logo">Sal<b>dato</b></div>
+    <div class="cta-main">Primi 10 lavori<br>offerti da noi.</div>
+    <div class="cta-button">Provalo gratis</div>
+    <div class="cta-sub">Zero carta. Zero impegno.</div>
+    <div class="cta-arrow">↓</div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIGURAZIONE =====
+const SCENES = [
+  { duration: 3000 },  // Hook
+  { duration: 4000 },  // Problema
+  { duration: 4000 },  // Agitazione
+  { duration: 5000 },  // Soluzione
+  { duration: 4000 },  // Prezzo
+  { duration: 5000 },  // CTA
+];
+const TOTAL_DURATION = SCENES.reduce((a, s) => a + s.duration, 0); // 25s totali
+const COUNTDOWN_TIME = 3; // secondi countdown
+
+let currentScene = 0;
+let videoStartTime = 0;
+
+// ===== PARTICELLE =====
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = Math.random() * 10 + 's';
+    p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
+    container.appendChild(p);
+  }
+}
+
+// ===== PROGRESS BAR =====
+function createProgressBar() {
+  const prog = document.getElementById('progress');
+  SCENES.forEach(() => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.innerHTML = '<div class="fill"></div>';
+    prog.appendChild(bar);
+  });
+}
+
+function updateProgress(sceneIdx, elapsed) {
+  const bars = document.querySelectorAll('.progress .bar');
+  bars.forEach((bar, i) => {
+    bar.classList.remove('active', 'done');
+    const fill = bar.querySelector('.fill');
+    if (i < sceneIdx) {
+      bar.classList.add('done');
+      fill.style.width = '100%';
+      fill.style.transition = 'none';
+    } else if (i === sceneIdx) {
+      bar.classList.add('active');
+      const pct = (elapsed / SCENES[i].duration) * 100;
+      fill.style.width = pct + '%';
+      fill.style.transition = 'width 100ms linear';
+    } else {
+      fill.style.width = '0';
+      fill.style.transition = 'none';
+    }
+  });
+}
+
+// ===== WEB AUDIO: Lo-fi beat sociale =====
+let audioCtx = null;
+let masterGain = null;
+let beatInterval = null;
+let beatStep = 0;
+let musicPlaying = false;
+
+const BPM = 90;
+const STEP_MS = (60 / BPM / 4) * 1000;
+
+function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.45;
+  masterGain.connect(audioCtx.destination);
+  musicPlaying = true;
+  startBeat();
+}
+
+function startBeat() {
+  beatStep = 0;
+  beatInterval = setInterval(() => {
+    if (!musicPlaying) return;
+    const step = beatStep % 16;
+
+    // Kick: 0, 8
+    if (step === 0 || step === 8) playKick();
+    // Snap: 4, 12
+    if (step === 4 || step === 12) playSnap();
+    // Hi-hat pattern
+    if (step % 2 === 0 || step === 3 || step === 7 || step === 11) {
+      playHat(step % 4 === 0 ? 0.07 : 0.035);
+    }
+    // Bass
+    const bassNotes = [146.83,146.83,0,146.83,0,174.61,196.00,0,130.81,130.81,0,130.81,0,146.83,164.81,0];
+    if (bassNotes[step] > 0) playBass(bassNotes[step]);
+    // Melody ogni 8 step
+    if (step % 8 === 0) {
+      const melodies = [587.33,523.25,440.00,392.00,349.23];
+      playMelody(melodies[Math.floor(beatStep / 8) % melodies.length]);
+    }
+
+    beatStep++;
+  }, STEP_MS);
+}
+
+function playKick() {
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(150, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.55, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
+  o.connect(g); g.connect(masterGain);
+  o.start(); o.stop(audioCtx.currentTime + 0.22);
+}
+
+function playSnap() {
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.exp(-(i/d.length)*25);
+  const s = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  s.buffer = buf; f.type='highpass'; f.frequency.value=1500;
+  g.gain.value = 0.15;
+  s.connect(f); f.connect(g); g.connect(masterGain); s.start();
+}
+
+function playHat(vol) {
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.025, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.exp(-(i/d.length)*45);
+  const s = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  s.buffer = buf; f.type='highpass'; f.frequency.value=8000;
+  g.gain.value = vol;
+  s.connect(f); f.connect(g); g.connect(masterGain); s.start();
+}
+
+function playBass(freq) {
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  o.type = 'triangle'; o.frequency.value = freq;
+  f.type='lowpass'; f.frequency.value=280; f.Q.value=2;
+  g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + STEP_MS/1000*1.5);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(); o.stop(audioCtx.currentTime + STEP_MS/1000*1.8);
+}
+
+function playMelody(freq) {
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  o.type = 'sine'; o.frequency.value = freq;
+  o.detune.value = (Math.random()-0.5)*12;
+  f.type='lowpass'; f.frequency.value=1400;
+  g.gain.setValueAtTime(0.06, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.06, audioCtx.currentTime + 0.15);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(); o.stop(audioCtx.currentTime + 0.6);
+}
+
+// ===== ANIMAZIONI SCENE =====
+function animateScene(idx) {
+  const scene = document.getElementById('scene-' + idx);
+  scene.classList.add('active');
+
+  switch(idx) {
+    case 0: animateHook(scene); break;
+    case 1: animateStat(scene); break;
+    case 2: animateMoney(scene); break;
+    case 3: animateSolution(scene); break;
+    case 4: animatePrice(scene); break;
+    case 5: animateCTA(scene); break;
+  }
+}
+
+function hideScene(idx) {
+  const scene = document.getElementById('scene-' + idx);
+  scene.classList.remove('active');
+}
+
+// Scene 1: Hook
+function animateHook(el) {
+  const emoji = el.querySelector('.hook-emoji');
+  const text = el.querySelector('.hook-text');
+  
+  // Emoji slam in
+  setTimeout(() => {
+    emoji.style.transition = 'opacity .2s, transform .3s cubic-bezier(0.175,0.885,0.32,1.275)';
+    emoji.style.opacity = '1';
+    emoji.style.transform = 'scale(1.2)';
+    setTimeout(() => emoji.style.transform = 'scale(1)', 200);
+  }, 100);
+
+  // Testo entra con punch
+  setTimeout(() => {
+    text.style.transition = 'opacity .3s, transform .4s cubic-bezier(0.175,0.885,0.32,1.275)';
+    text.style.opacity = '1';
+    text.style.transform = 'translateY(0)';
+  }, 500);
+  text.style.transform = 'translateY(40px)';
+}
+
+// Scene 2: Statistica
+function animateStat(el) {
+  const num = el.querySelector('.stat-number');
+  const label = el.querySelector('.stat-label');
+  const sub = el.querySelector('.stat-sub');
+
+  setTimeout(() => {
+    num.style.transition = 'opacity .2s, transform .4s cubic-bezier(0.175,0.885,0.32,1.275)';
+    num.style.opacity = '1';
+    num.style.transform = 'scale(1)';
+    // Shake per impatto
+    setTimeout(() => el.style.animation = 'shake 0.4s ease', 300);
+  }, 200);
+  num.style.transform = 'scale(0.3)';
+
+  setTimeout(() => {
+    label.style.transition = 'opacity .4s';
+    label.style.opacity = '1';
+  }, 800);
+
+  setTimeout(() => {
+    sub.style.transition = 'opacity .4s';
+    sub.style.opacity = '1';
+  }, 1400);
+}
+
+// Scene 3: Counter soldi persi
+function animateMoney(el) {
+  const counter = el.querySelector('.money-lost');
+  const label = el.querySelector('.money-label');
+  const sub = el.querySelector('.money-sub');
+
+  counter.style.transition = 'opacity .3s';
+  counter.style.opacity = '1';
+
+  // Animazione counter da 0 a 4.200
+  let val = 0;
+  const target = 4200;
+  const steps = 40;
+  const stepTime = 2500 / steps;
+  let i = 0;
+  const interval = setInterval(() => {
+    i++;
+    val = Math.round((i / steps) * target);
+    counter.textContent = '-€' + val.toLocaleString('it-IT');
+    if (i >= steps) clearInterval(interval);
+  }, stepTime);
+
+  setTimeout(() => { label.style.transition='opacity .4s'; label.style.opacity='1'; }, 600);
+  setTimeout(() => { sub.style.transition='opacity .4s'; sub.style.opacity='1'; }, 1200);
+}
+
+// Scene 4: Soluzione
+function animateSolution(el) {
+  const logo = el.querySelector('.solution-logo');
+  const tagline = el.querySelector('.solution-tagline');
+  const features = el.querySelectorAll('.feature');
+
+  setTimeout(() => {
+    logo.style.transition = 'opacity .4s, transform .5s cubic-bezier(0.175,0.885,0.32,1.275)';
+    logo.style.opacity = '1';
+    logo.style.transform = 'scale(1)';
+  }, 100);
+  logo.style.transform = 'scale(0.7)';
+
+  setTimeout(() => {
+    tagline.style.transition = 'opacity .4s';
+    tagline.style.opacity = '1';
+  }, 600);
+
+  features.forEach((f, i) => {
+    setTimeout(() => {
+      f.style.transition = 'opacity .4s, transform .5s cubic-bezier(0.175,0.885,0.32,1.275)';
+      f.style.opacity = '1';
+      f.style.transform = 'translateX(0)';
+    }, 1200 + i * 500);
+  });
+}
+
+// Scene 5: Prezzo
+function animatePrice(el) {
+  const box = el.querySelector('.price-box');
+  const detail = el.querySelector('.price-detail');
+  const sub = el.querySelector('.price-sub');
+
+  setTimeout(() => {
+    box.style.transition = 'opacity .3s, transform .5s cubic-bezier(0.175,0.885,0.32,1.275)';
+    box.style.opacity = '1';
+    box.style.transform = 'scale(1)';
+  }, 200);
+
+  setTimeout(() => {
+    detail.style.transition = 'opacity .4s';
+    detail.style.opacity = '1';
+  }, 1200);
+
+  setTimeout(() => {
+    sub.style.transition = 'opacity .4s';
+    sub.style.opacity = '1';
+  }, 1800);
+}
+
+// Scene 6: CTA
+function animateCTA(el) {
+  const logo = el.querySelector('.cta-logo');
+  const main = el.querySelector('.cta-main');
+  const btn = el.querySelector('.cta-button');
+  const sub = el.querySelector('.cta-sub');
+  const arrow = el.querySelector('.cta-arrow');
+
+  setTimeout(() => { logo.style.transition='opacity .4s'; logo.style.opacity='1'; }, 100);
+  setTimeout(() => { main.style.transition='opacity .4s'; main.style.opacity='1'; }, 600);
+  setTimeout(() => {
+    btn.style.transition = 'opacity .3s, transform .4s cubic-bezier(0.175,0.885,0.32,1.275)';
+    btn.style.opacity = '1';
+    btn.style.transform = 'scale(1)';
+  }, 1200);
+  setTimeout(() => { sub.style.transition='opacity .4s'; sub.style.opacity='1'; }, 1800);
+  setTimeout(() => { arrow.style.transition='opacity .3s'; arrow.style.opacity='1'; }, 2200);
+}
+
+// ===== TIMELINE ENGINE =====
+function runTimeline() {
+  let sceneStart = performance.now();
+  let sceneIdx = 0;
+
+  animateScene(0);
+
+  function tick() {
+    const now = performance.now();
+    const elapsed = now - sceneStart;
+
+    updateProgress(sceneIdx, elapsed);
+
+    if (elapsed >= SCENES[sceneIdx].duration) {
+      hideScene(sceneIdx);
+      sceneIdx++;
+      if (sceneIdx >= SCENES.length) {
+        // Video finito — resta sull'ultima scena
+        sceneIdx = SCENES.length - 1;
+        animateScene(sceneIdx);
+        document.getElementById('scene-' + sceneIdx).classList.add('active');
+        updateProgress(sceneIdx, SCENES[sceneIdx].duration);
+        return;
+      }
+      sceneStart = now;
+      animateScene(sceneIdx);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+}
+
+// ===== COUNTDOWN & START =====
+function startCountdown() {
+  const countdownEl = document.getElementById('countdown');
+  const numEl = document.getElementById('countNum');
+  let count = COUNTDOWN_TIME;
+
+  numEl.textContent = count;
+
+  const interval = setInterval(() => {
+    count--;
+    if (count <= 0) {
+      clearInterval(interval);
+      countdownEl.classList.add('hidden');
+      initAudio();
+      runTimeline();
+    } else {
+      numEl.textContent = count;
+    }
+  }, 1000);
+}
+
+// ===== INIT =====
+createParticles();
+createProgressBar();
+
+// Click per far partire (necessario per Web Audio policy)
+document.addEventListener('click', function startOnce() {
+  document.removeEventListener('click', startOnce);
+  startCountdown();
+}, { once: true });
+
+// Mostra messaggio "tap to start"
+const tapMsg = document.createElement('div');
+tapMsg.style.cssText = 'position:absolute;bottom:200px;left:50%;transform:translateX(-50%);z-index:300;color:rgba(255,255,255,.5);font-size:32px;font-family:Inter,sans-serif;font-weight:600;animation:countPulse 1.5s infinite';
+tapMsg.textContent = '▶ Tap per iniziare';
+document.querySelector('.canvas').appendChild(tapMsg);
+document.addEventListener('click', () => tapMsg.remove(), { once: true });
+</script>
+</body>
+</html>
