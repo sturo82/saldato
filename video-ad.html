@@ -340,203 +340,235 @@ const nextBtn = document.getElementById('nextBtn');
 const backBtn = document.getElementById('backBtn');
 const musicToggle = document.getElementById('musicToggle');
 
-// --- WEB AUDIO: Sottofondo musicale elettronico/ambient ---
+// --- WEB AUDIO: Lo-fi / Chill beat per social engagement ---
 let audioCtx = null;
 let musicPlaying = false;
 let masterGain = null;
+let beatInterval = null;
+let bassOsc = null;
+let padOscs = [];
+let beatStep = 0;
+
+const BPM = 85; // Tempo chill, perfetto per Reels/TikTok
+const STEP_TIME = 60 / BPM / 4; // 16th note duration
+
+// Scala minore pentatonica in Dm — mood emotivo ma catchy
+const BASS_PATTERN = [146.83, 146.83, 0, 146.83, 0, 174.61, 196.00, 0, 
+                      130.81, 130.81, 0, 130.81, 0, 146.83, 164.81, 0]; // Dm pattern
+const MELODY_NOTES = [587.33, 523.25, 440.00, 392.00, 349.23]; // D5 C5 A4 G4 F4
 
 function createMusic() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.4;
+  masterGain.gain.value = 0.5;
   masterGain.connect(audioCtx.destination);
   musicPlaying = true;
+
+  startBeat();
+  startPad();
 }
 
-// Sound design per scena — ogni slide ha il suo suono
-function playSoundForScene(index) {
-  if (!audioCtx || !musicPlaying) return;
+// --- BEAT ENGINE: Kick + Hi-hat + Snare pattern ---
+function startBeat() {
+  beatStep = 0;
+  beatInterval = setInterval(() => {
+    if (!musicPlaying) return;
+    const step = beatStep % 16;
 
-  switch(index) {
-    case 0:
-      // "Mandi il preventivo. Poi spariscono."
-      // Suono WhatsApp send + silenzio inquietante + eco che svanisce
-      playWhoosh();
-      setTimeout(() => playGhostEcho(), 400);
-      break;
+    // Kick: 1 e 9 (ogni 2 battiti)
+    if (step === 0 || step === 8) {
+      playKick();
+    }
 
-    case 1:
-      // "7/10 preventivi a vuoto"
-      // Impatto drammatico — colpo basso + tensione
-      playImpact();
-      break;
+    // Snare/Clap: 4 e 12
+    if (step === 4 || step === 12) {
+      playSnap();
+    }
 
-    case 2:
-      // "Ora sai chi sparisce" — notifiche che arrivano
-      // Suoni di notifica in sequenza (ding ding ding)
-      playNotification(600, 0);
-      playNotification(800, 300);
-      playNotification(1000, 600);
-      break;
+    // Hi-hat: pattern ritmico stile trap/lo-fi
+    if (step % 2 === 0 || step === 3 || step === 7 || step === 11 || step === 15) {
+      playHiHat(step % 4 === 0 ? 0.08 : 0.04);
+    }
 
-    case 3:
-      // "0€ se non funziona" — sollievo, positivo
-      // Suono "cash register" / coin soddisfacente
-      playCashSound();
-      break;
+    // Bassline
+    const bassNote = BASS_PATTERN[step];
+    if (bassNote > 0) {
+      playBassNote(bassNote);
+    }
 
-    case 4:
-      // CTA finale — suono di conferma/successo energico
-      playSuccessChime();
-      break;
-  }
+    // Melodia lo-fi: nota ogni 4 step con variazione per scena
+    if (step % 8 === 0) {
+      const noteIdx = (beatStep / 8 + current) % MELODY_NOTES.length;
+      playMelodyNote(MELODY_NOTES[Math.floor(noteIdx)]);
+    }
+
+    beatStep++;
+  }, STEP_TIME * 1000);
 }
 
-// --- EFFETTI SONORI ---
+// --- KICK: Lo-fi boom, caldo e profondo ---
+function playKick() {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.6, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+  osc.connect(g);
+  g.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.25);
+}
 
-function playWhoosh() {
-  // Whoosh di invio messaggio
-  const bufSize = audioCtx.sampleRate * 0.4;
+// --- SNAP/CLAP: Suono secco tipo finger snap ---
+function playSnap() {
+  const bufSize = audioCtx.sampleRate * 0.06;
   const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
   const d = buf.getChannelData(0);
   for (let i = 0; i < bufSize; i++) {
     const t = i / bufSize;
-    d[i] = (Math.random() * 2 - 1) * Math.exp(-t * 6) * (1 - t);
+    d[i] = (Math.random() * 2 - 1) * Math.exp(-t * 30) * 0.8;
   }
   const src = audioCtx.createBufferSource();
   const g = audioCtx.createGain();
   const f = audioCtx.createBiquadFilter();
   src.buffer = buf;
-  f.type = 'bandpass';
-  f.frequency.value = 2000;
-  f.Q.value = 0.5;
-  g.gain.value = 0.3;
+  f.type = 'highpass';
+  f.frequency.value = 1200;
+  g.gain.value = 0.18;
   src.connect(f);
   f.connect(g);
   g.connect(masterGain);
   src.start();
 }
 
-function playGhostEcho() {
-  // Eco che svanisce — sensazione di vuoto/silenzio
-  const osc = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  const delay = audioCtx.createDelay();
-  const feedback = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = 380;
-  g.gain.setValueAtTime(0.15, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
-  delay.delayTime.value = 0.3;
-  feedback.gain.value = 0.4;
-  osc.connect(g);
-  g.connect(masterGain);
-  g.connect(delay);
-  delay.connect(feedback);
-  feedback.connect(delay);
-  delay.connect(masterGain);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.15);
-}
-
-function playImpact() {
-  // Colpo basso drammatico — tipo trailer cinematografico
-  const osc = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.8);
-  g.gain.setValueAtTime(0.5, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
-  osc.connect(g);
-  g.connect(masterGain);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 1.2);
-
-  // Layer di rumore per il punch
-  const bufSize = audioCtx.sampleRate * 0.1;
+// --- HI-HAT: Leggero, ritmico ---
+function playHiHat(vol) {
+  const bufSize = audioCtx.sampleRate * 0.03;
   const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
   const d = buf.getChannelData(0);
   for (let i = 0; i < bufSize; i++) {
-    d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.05));
+    const t = i / bufSize;
+    d[i] = (Math.random() * 2 - 1) * Math.exp(-t * 50);
   }
   const src = audioCtx.createBufferSource();
-  const ng = audioCtx.createGain();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
   src.buffer = buf;
-  ng.gain.value = 0.25;
-  src.connect(ng);
-  ng.connect(masterGain);
+  f.type = 'highpass';
+  f.frequency.value = 7000;
+  g.gain.value = vol;
+  src.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
   src.start();
 }
 
-function playNotification(freq, delayMs) {
-  // Ding di notifica — come un'app che ti avvisa
-  setTimeout(() => {
-    if (!musicPlaying) return;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    osc.frequency.setValueAtTime(freq * 1.5, audioCtx.currentTime + 0.05);
-    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-    osc.connect(g);
-    g.connect(masterGain);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.4);
-  }, delayMs);
+// --- BASS: Sub-bass caldo, tipo lo-fi ---
+function playBassNote(freq) {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  f.type = 'lowpass';
+  f.frequency.value = 300;
+  f.Q.value = 2;
+  g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + STEP_TIME * 1.5);
+  osc.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + STEP_TIME * 1.8);
 }
 
-function playCashSound() {
-  // Suono moneta/successo — gratificante
-  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6 (arpeggio veloce ascendente)
-  notes.forEach((freq, i) => {
-    setTimeout(() => {
-      if (!musicPlaying) return;
-      const osc = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      g.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-      osc.connect(g);
-      g.connect(masterGain);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.3);
-    }, i * 80);
+// --- MELODY: Note lo-fi con "vinile" feel ---
+function playMelodyNote(freq) {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  // Leggero detune per effetto lo-fi/vinile
+  osc.detune.value = (Math.random() - 0.5) * 15;
+  f.type = 'lowpass';
+  f.frequency.value = 1500;
+  g.gain.setValueAtTime(0.07, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.07, audioCtx.currentTime + 0.2);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+  osc.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.7);
+}
+
+// --- PAD: Accordo ambientale continuo che cambia per scena ---
+const PAD_CHORDS = [
+  [293.66, 349.23, 440.00],   // Dm (problema - tensione)
+  [261.63, 329.63, 392.00],   // Cm (statistica - dramma)
+  [349.23, 440.00, 523.25],   // F (soluzione - apertura)
+  [261.63, 329.63, 392.00],   // C (pay-per-result - positivo)
+  [293.66, 369.99, 440.00],   // D major (CTA - energia)
+];
+
+function startPad() {
+  updatePad(current);
+}
+
+function updatePad(sceneIdx) {
+  // Fade out vecchio pad
+  padOscs.forEach(({osc, gain}) => {
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+    osc.stop(audioCtx.currentTime + 1);
   });
-}
+  padOscs = [];
 
-function playSuccessChime() {
-  // Chime finale trionfale
-  const chord = [523.25, 659.25, 783.99]; // C major
-  chord.forEach((freq) => {
+  // Crea nuovo accordo pad
+  const chord = PAD_CHORDS[sceneIdx] || PAD_CHORDS[0];
+  chord.forEach(freq => {
     const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
     osc.type = 'sine';
     osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.12, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.12, audioCtx.currentTime + 0.8);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
-    osc.connect(g);
-    g.connect(masterGain);
+    osc.detune.value = (Math.random() - 0.5) * 8;
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 1.2);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
     osc.start();
-    osc.stop(audioCtx.currentTime + 1.5);
+    padOscs.push({osc, gain});
   });
-  // Sparkle in alto
-  setTimeout(() => {
-    if (!musicPlaying) return;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 2093; // C7
-    g.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-    osc.connect(g);
-    g.connect(masterGain);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.6);
-  }, 200);
+}
+
+// --- TRANSIZIONE SCENA: suono sottile "swoosh" ---
+function playTransition() {
+  if (!audioCtx || !musicPlaying) return;
+  const bufSize = audioCtx.sampleRate * 0.15;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / bufSize;
+    d[i] = (Math.random() * 2 - 1) * Math.sin(t * Math.PI) * 0.3;
+  }
+  const src = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  src.buffer = buf;
+  f.type = 'bandpass';
+  f.frequency.value = 3000;
+  f.Q.value = 1;
+  g.gain.value = 0.1;
+  src.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+  src.start();
 }
 
 function toggleMusic() {
@@ -547,11 +579,14 @@ function toggleMusic() {
   } else if (musicPlaying) {
     audioCtx.suspend();
     musicPlaying = false;
+    if (beatInterval) clearInterval(beatInterval);
+    beatInterval = null;
     musicToggle.textContent = '🔇';
     musicToggle.classList.add('muted');
   } else {
     audioCtx.resume();
     musicPlaying = true;
+    startBeat();
     musicToggle.textContent = '🔊';
     musicToggle.classList.remove('muted');
   }
@@ -577,6 +612,12 @@ function showScene(index) {
 
   backBtn.classList.toggle('hidden', index === 0);
   nextBtn.textContent = index === TOTAL_SCENES - 1 ? 'Ricomincia ↺' : 'Avanti →';
+
+  // Aggiorna il pad con l'accordo della scena
+  if (audioCtx && musicPlaying) {
+    updatePad(index);
+    playTransition();
+  }
 }
 
 nextBtn.addEventListener('click', () => {
@@ -584,18 +625,15 @@ nextBtn.addEventListener('click', () => {
   current++;
   if (current >= TOTAL_SCENES) current = 0;
   showScene(current);
-  playSoundForScene(current);
 });
 
 backBtn.addEventListener('click', () => {
   current--;
   if (current < 0) current = 0;
   showScene(current);
-  playSoundForScene(current);
 });
 
 showScene(0);
-// Suono della prima scena parte al primo click su "Avanti"
 </script>
 </body>
 </html>
