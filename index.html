@@ -98,6 +98,12 @@
   .p-draft{background:#eef0f3;color:#6b7280}
   .p-ghost{background:var(--red-bg);color:var(--red)}
 
+  .btn-mini{border:0;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;transition:.12s}
+  .btn-mini:active{transform:scale(.96)}
+  .btn-mini-blue{background:#eef1fb;color:#3a52c4}
+  .btn-mini-green{background:var(--green-bg);color:var(--green)}
+  .ghost-banner{background:var(--red-bg);border:1px solid #f5c6cb;border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:2px}
+
   .fab{position:absolute;right:18px;bottom:20px;background:var(--brand);color:#fff;border:0;border-radius:16px;padding:15px 18px;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(47,91,255,.45);cursor:pointer;display:flex;gap:8px;align-items:center}
 
   label.fld{display:block;margin:12px 0 0}
@@ -294,16 +300,26 @@ const SCREENS = {
     const st=STATUS[x.status];
     const amt = x.status==="balance" ? balance(x) : total(x);
     const amtlbl = x.status==="balance" ? "da incassare" : "totale";
-    const ghost = ["sent","seen"].includes(x.status) ? `<span class="pill p-ghost">👻 Non risponde</span>` : "";
+    const isGhost = ["sent","seen"].includes(x.status);
+    const unlocked = x.unlocked || false;
+    const ghost = isGhost ? `<span class="pill p-ghost">👻 Non risponde</span>` : "";
+    const blurName = isGhost && !unlocked;
     return `<div class="job" onclick="openJob(${x.id})">
       <div class="row">
         <div>
           <div class="t">${x.title}</div>
-          <div class="c">${x.client}</div>
+          <div class="c" ${blurName?'style="filter:blur(5px);user-select:none"':''}>${x.client}</div>
         </div>
         <div class="amt">${eur(amt)}<div class="c" style="font-weight:500">${amtlbl}</div></div>
       </div>
       <div style="margin-top:10px"><span class="pill ${st.pill}">${st.label}</span> ${ghost}</div>
+      ${isGhost && !unlocked ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-mini btn-mini-blue" onclick="event.stopPropagation();unlockGhost(${x.id})">🔓 Scopri chi (5&euro;)</button>
+        <button class="btn-mini btn-mini-green" onclick="event.stopPropagation();recoverGhost(${x.id})">⚡ Fallo tornare (10&euro;)</button>
+      </div>` : ""}
+      ${isGhost && unlocked ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-mini btn-mini-green" onclick="event.stopPropagation();recoverGhost(${x.id})">⚡ Attiva sollecito automatico (10&euro;)</button>
+      </div>` : ""}
     </div>`;
   }).join("");
   return `
@@ -314,6 +330,10 @@ const SCREENS = {
       <div class="kpi amber"><div class="l">Da incassare</div><div class="v">${eur(incassare)}</div></div>
       <div class="kpi green"><div class="l">Acconti incassati</div><div class="v">${eur(accontiMese)}</div></div>
     </div>
+    ${fantasmi > 0 ? `<div class="ghost-banner">
+      <span>👻 <b>${fantasmi}</b> clienti non rispondono.</span>
+      <span style="font-size:12px;color:var(--muted)">Scopri chi sono o falli tornare con un tap.</span>
+    </div>` : ""}
     <div class="section-title">I tuoi lavori</div>
     ${rows}
     <div style="height:70px"></div>
@@ -636,6 +656,14 @@ function clientAccept(){
 }
 function clientPayDeposit(){ J().status="deposit"; toast("Acconto incassato!"); go("c-deposit-done"); }
 function confirmCashDeposit(){ J().status="deposit"; toast("Acconto contanti confermato ✓"); render(); }
+function unlockGhost(id){
+  const x = state.jobs.find(j=>j.id===id);
+  if(x){ x.unlocked=true; toast("🔓 Sbloccato: " + x.client + " — 5€"); render(); }
+}
+function recoverGhost(id){
+  const x = state.jobs.find(j=>j.id===id);
+  if(x){ x.unlocked=true; toast("⚡ Sollecito attivato per " + x.client + " — 10€. Saldato lo ricontatta per te."); render(); }
+}
 function requestBalance(){ J().status="balance"; toast("Richiesta di saldo inviata al cliente"); render(); }
 function remindBalance(){ toast("Sollecito saldo inviato ✓"); }
 function clientPayBalance(){ J().status="paid"; toast("Saldo pagato 🎉"); go("c-done"); }

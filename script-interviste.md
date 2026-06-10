@@ -101,6 +101,24 @@ Follow-up se dice un numero:
 
 ---
 
+### Domanda 6 — Il modello (valida il pay-per-result)
+> **"Ti faccio una proposta diversa da tutto quello che hai visto. Mandare i preventivi e sapere quanti ti ignorano: gratis, per sempre. Se poi vuoi che il sistema li ricontatti al posto tuo e te li riporti indietro — paghi 10€, ma solo se il cliente TORNA e CONFERMA il lavoro. Se non torna, non paghi niente. Che ne pensi?"**
+
+*Pausa lunga. Lascialo reagire.*
+
+Follow-up:
+> "Preferiresti pagare un fisso al mese — tipo 30€ — oppure questo modello dove paghi solo a risultato?"
+> "Se in un mese ti riporta indietro 3 clienti che erano spariti, pagheresti 30€ per quei tre? O ti sembra troppo?"
+> "E se ci fosse un tetto — tipo massimo 49€ al mese anche se ne recuperi 10 — cambierebbe qualcosa?"
+
+**Cosa cerchi:**
+- Reazione spontanea al "paghi solo se funziona" (di solito è: "e dove sta la fregatura?")
+- Se preferisce fisso vs risultato → capire la mentalità
+- Se il tetto lo tranquillizza o è indifferente
+- Se 10€ per fantasma recuperato gli sembra giusto, tanto, poco
+
+---
+
 ### Chiusura (1 minuto)
 > "Grazie, sei stato chiarissimo. Ultima cosa: sto costruendo esattamente questo. Si chiama Saldato. Mandi il preventivo con un link, vedi chi lo apre, chi sparisce, e i promemoria partono da soli. Quando è pronto tra qualche settimana ti va se te lo faccio provare gratis?"
 
@@ -124,6 +142,13 @@ Compila per ogni chiamata:
 | Danno concreto ultimo caso (€ o tempo) | |
 | Tool attuale (carta/WA/app) | |
 | Prezzo che pagherebbe (€/mese) | |
+| Reazione al pay-per-result (entusiasta/neutro/scettico) | |
+| Preferisce fisso o a risultato? | |
+| 10€ per fantasma recuperato: giusto/troppo/poco? | |
+| Tetto 49€: lo tranquillizza? (sì/no) | |
+| Proverebbe Saldato? (sì/no/forse) | |
+| Frase esatta più forte detta | |
+| Note libere | |
 | Proverebbe Saldato? (sì/no/forse) | |
 | Frase esatta più forte detta | |
 | Note libere | |
@@ -137,15 +162,20 @@ Compila per ogni chiamata:
 - 5+ su 10 danno un numero di prezzo spontaneamente
 - Almeno 3 dicono "lo voglio subito" o equivalente
 - Il danno medio è > 200€/mese in tempo perso
+- La reazione al pay-per-result è "entusiasta" o "dove sta la fregatura?" (segnale positivo)
+- La maggioranza preferisce pagare a risultato piuttosto che un fisso
 
 ### Segnali STOP (ripensa la leva):
 - La maggior parte dice "non è un problema" o "mi arrangio bene"
 - Nessuno dà un prezzo o dice "non pago per software"
 - Il vero problema che emerge è diverso (es. trovare clienti, non gestirli)
+- La reazione al pay-per-result è indifferenza ("mah, forse")
 
 ### Segnali PIVOT (stessa direzione, angolo diverso):
 - Il dolore c'è ma la forma è diversa (es. vogliono essere richiamati loro, non mandare link)
-- Il prezzo che danno è troppo basso (< 15€/mese) → modello freemium o commissione
+- Il prezzo che danno è troppo basso (< 15€/mese) → il tetto 49€ potrebbe essere troppo alto
+- Preferiscono fisso basso → valuta piano ibrido 19€/mese tutto incluso
+- Il 10€ per fantasma sembra troppo → testa con 5€ o 7€
 
 ---
 
@@ -163,13 +193,13 @@ Compila per ogni chiamata:
 
 Usa questa tabella per tenere il conto:
 
-| # | Nome | Data | Mestiere | Ghosting (1-5) | Pagherebbe? | Prezzo | Vuole provare? |
-|---|---|---|---|---|---|---|---|
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| ... | | | | | | | |
-| 25 | | | | | | | |
+| # | Nome | Data | Mestiere | Ghosting (1-5) | Pagherebbe? | Pay-per-result (👍/👎) | Prezzo giusto? | Vuole provare? |
+|---|---|---|---|---|---|---|---|---|
+| 1 | | | | | | | | |
+| 2 | | | | | | | | |
+| 3 | | | | | | | | |
+| ... | | | | | | | | |
+| 25 | | | | | | | | |
 
 ---
 
